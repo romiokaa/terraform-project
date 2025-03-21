@@ -5,7 +5,7 @@ variable "vm_size" {
 
 variable "location" {
   description = "Région de déploiement"
-  default     = "East US"
+  default     = "West Europe"
 }
 
 variable "admin_username" {
