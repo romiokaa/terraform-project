@@ -1,19 +1,69 @@
 #!/bin/bash
 
-# Mettre à jour les paquets du système
+# Mettre à jour les paquets et installer les dépendances
+echo "🔄 Mise à jour des paquets..."
 sudo apt-get update -y
+sudo apt-get install -y python3 python3-pip postgresql-client libpq-dev
 
-# Installer les dépendances nécessaires : Python, pip et les outils de développement
-sudo apt-get install -y python3-pip python3-dev build-essential
+# Installer les modules Python nécessaires
+echo "🐍 Installation des modules Python..."
+pip3 install --user psycopg2-binary flask azure-storage-blob
 
-# Installer Flask
-sudo pip3 install Flask
+# Créer le répertoire de l'application Flask dans /opt/
+echo "🗂 Création du répertoire /opt/flaskapp..."
+sudo mkdir -p /opt/flaskapp
 
-# Créer un répertoire pour l'application Flask
-mkdir -p /home/${USER}/flask-app
+# Copier l'application Flask depuis /tmp/
+if [ -f "/tmp/app.py" ]; then
+    echo "📂 Copie de app.py dans /opt/flaskapp..."
+    sudo cp /tmp/app.py /opt/flaskapp/
+else
+    echo "❌ Erreur : Le fichier /tmp/app.py n'existe pas."
+    exit 1
+fi
 
-# Copier le fichier app.py depuis l'hôte vers la VM
-cp /home/${USER}/flask-app/app.py /home/${USER}/flask-app/app.py
+# Vérifier que app.py a bien été copié
+if [ ! -f "/opt/flaskapp/app.py" ]; then
+    echo "❌ Erreur : Le fichier /opt/flaskapp/app.py n'a pas été copié correctement."
+    exit 1
+fi
 
-# Lancer l'application Flask en arrière-plan
-nohup python3 /home/${USER}/flask-app/app.py &
+# Donner les bons droits
+sudo chmod +x /opt/flaskapp/app.py
+
+# Créer un service systemd pour Flask
+echo "⚙️ Création du service systemd pour Flask..."
+sudo bash -c 'cat > /etc/systemd/system/flask-app.service << EOF
+[Unit]
+Description=Flask Application Service
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/flaskapp
+ExecStart=/usr/bin/python3 /opt/flaskapp/app.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF'
+
+# Recharger systemd pour prendre en compte le service
+echo "🔄 Rechargement de systemd..."
+sudo systemctl daemon-reload
+
+# Activer et démarrer le service Flask
+echo "🚀 Activation et démarrage du service Flask..."
+sudo systemctl enable flask-app.service
+sudo systemctl start flask-app.service
+
+# Vérifier le statut du service
+echo "📊 Vérification du statut du service Flask..."
+sudo systemctl status flask-app.service --no-pager
+
+# Créer un fichier de log accessible
+echo "📝 Création du fichier de log /var/log/flaskapp.log..."
+sudo touch /var/log/flaskapp.log
+sudo chmod 666 /var/log/flaskapp.log
+
+echo "✅ Installation de Flask terminée avec succès !"

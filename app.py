@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # from flask import Flask, request, jsonify
 # from azure.storage.blob import BlobServiceClient
 # import psycopg2

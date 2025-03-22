@@ -83,6 +83,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   network_interface_ids = [azurerm_network_interface.nic.id]
 
   os_disk {
+    name              = "os_disk"
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
@@ -94,10 +95,12 @@ resource "azurerm_linux_virtual_machine" "vm" {
     version   = "latest"
   }
 
+  depends_on = [azurerm_public_ip.vm_ip]
+
    # Transférer le fichier app.py depuis le répertoire local vers la VM
   provisioner "file" {
     source      = "./app.py"  # Le chemin local vers votre fichier app.py
-    destination = "/home/${var.admin_username}/flask-app/app.py"  # Destination sur la VM
+    destination = "/tmp/app.py"  # Destination sur la VM
     connection {
       type     = "ssh"
       user     = var.admin_username
@@ -109,7 +112,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   # Transférer le script bash setup_flask.sh
   provisioner "file" {
     source      = "./setup_flask.sh"  # Le chemin local vers votre script bash
-    destination = "/home/${var.admin_username}/setup_flask.sh"  # Destination sur la VM
+    destination = "/tmp/setup_flask.sh"  # Destination sur la VM
     connection {
       type     = "ssh"
       user     = var.admin_username
@@ -121,8 +124,11 @@ resource "azurerm_linux_virtual_machine" "vm" {
   # Exécuter le script Bash sur la VM pour installer les dépendances et lancer Flask
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /home/${var.admin_username}/setup_flask.sh",  # Rendre le script exécutable
-      "sudo /home/${var.admin_username}/setup_flask.sh"  # Exécuter le script
+      "sudo apt-get update -y",
+      "sudo apt-get install -y dos2unix",
+      "sudo dos2unix /tmp/setup_flask.sh",
+      "sudo chmod +x /tmp/setup_flask.sh",
+      "sudo /tmp/setup_flask.sh"
     ]
     connection {
       type     = "ssh"
@@ -168,6 +174,7 @@ resource "azurerm_postgresql_server" "romy_postgres" {
   geo_redundant_backup_enabled = false
 
   ssl_enforcement_enabled      = true
+  public_network_access_enabled   = true
 }
 
 resource "azurerm_postgresql_database" "romy_database" {
@@ -176,12 +183,4 @@ resource "azurerm_postgresql_database" "romy_database" {
   server_name         = azurerm_postgresql_server.romy_postgres.name  
   collation           = "en_US.utf8"
   charset             = "UTF8"
-}
-
-resource "azurerm_postgresql_server_firewall_rule" "romy_firewall" {
-  name                = "allow_all"
-  resource_group_name = azurerm_postgresql_server.romy_postgres.resource_group_name
-  server_name         = azurerm_postgresql_server.romy_postgres.name
-  start_ip_address    = "0.0.0.0"   
-  end_ip_address      = "255.255.255.255"   
 }
