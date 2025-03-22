@@ -41,3 +41,9 @@ variable "postgres_db_name" {
   type        = string
   default     = "romyflaskdb"
 }
+
+variable "environment" {
+    description = "Environnement (Dev, Test, Prod)"
+    type        = string
+    default     = "Dev"
+}

@@ -9,7 +9,7 @@ output "storage_account_name" {
 }
 
 output "backend_url" {
-  value = "http://${azurerm_public_ip.vm_ip.ip_address}:5000"
+  value = "http://${azurerm_public_ip.vm_ip.ip_address}:8080"
 }
 
 output "storage_container_name" {

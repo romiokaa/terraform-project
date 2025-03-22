@@ -8,6 +8,10 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
+
+    tags = {
+    environment = var.environment
+  }
 }
 
 resource "azurerm_subnet" "subnet" {
@@ -24,12 +28,24 @@ resource "azurerm_network_security_group" "nsg" {
 
   security_rule {
     name                       = "HTTP"
-    priority                   = 1002
+    priority                   = 1001
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "5000"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+    security_rule {
+    name                       = "Allow8080"
+    priority                   = 1002
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "8080"
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
@@ -45,6 +61,10 @@ resource "azurerm_network_security_group" "nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+
+    tags = {
+    environment = var.environment
+  }
 }
 
 resource "azurerm_subnet_network_security_group_association" "nsg_assoc" {
@@ -57,6 +77,10 @@ resource "azurerm_public_ip" "vm_ip" {
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   allocation_method   = "Static"
+
+    tags = {
+    environment = var.environment
+  }
 }
 
 resource "azurerm_network_interface" "nic" {
@@ -137,6 +161,10 @@ resource "azurerm_linux_virtual_machine" "vm" {
       host     = azurerm_public_ip.vm_ip.ip_address
     }
   }
+
+    tags = {
+    environment = var.environment
+  }
 }
 
 resource "azurerm_storage_account" "storage" {
@@ -145,6 +173,10 @@ resource "azurerm_storage_account" "storage" {
   location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+
+    tags = {
+    environment = var.environment
+  }
 }
 
 resource "azurerm_storage_container" "container" {
