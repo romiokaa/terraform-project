@@ -1,4 +1,3 @@
-```markdown
 # Déploiement Automatisé d'une Infrastructure Cloud avec Terraform
 
 ## 📌 Description du Projet
@@ -150,5 +149,3 @@ Ce projet a permis d'automatiser entièrement le déploiement d'une infrastructu
 ✅ Automatiser la connexion sécurisée entre le backend et Azure Blob Storage.  
 ✅ Ajouter un **load balancer** pour gérer le trafic vers l’application.  
 ✅ Implémenter un **monitoring cloud** pour suivre l’utilisation des ressources.
-
-```
