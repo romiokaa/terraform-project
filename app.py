@@ -10,6 +10,8 @@ app = Flask(__name__)
 
 # Plusieurs tests de connexion que j'ai essayé
 
+# 1er test
+
 # # Connexion à Azure Blob Storage
 # BLOB_CONNECTION_STRING = "aller dans le container du blob storage et récupérer le chemin d'accès dans l'onglet clé d'accès"
 # blob_service_client = BlobServiceClient.from_connection_string(BLOB_CONNECTION_STRING)
@@ -27,6 +29,8 @@ app = Flask(__name__)
 # )
 # container_client = blob_service_client.get_container_client(CONTAINER_NAME)
 
+# 2eme test
+
 # # Utiliser DefaultAzureCredential pour obtenir les informations d'authentification automatiquement
 # credential = DefaultAzureCredential()
 
@@ -42,8 +46,11 @@ app = Flask(__name__)
 
 # container_client = blob_service_client.get_container_client(CONTAINER_NAME)
 
-# URL de ton Key Vault (à remplacer par le nom de ton Key Vault)
-vault_url = "https://romykeyvault.vault.azure.net/"  # Remplace par l'URL de ton Key Vault
+
+# Dernière méthode que j'ai testé pour la connexion backend/stockage blob
+
+# URL de Key Vault
+vault_url = "https://romykeyvault.vault.azure.net/"  
 
 # Utiliser DefaultAzureCredential pour l'authentification
 credential = DefaultAzureCredential()
@@ -100,7 +107,9 @@ def list_files():
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
 
+
 # test d'un backend simple 
+
 # from flask import Flask
 
 # app = Flask(__name__)
