@@ -7,7 +7,7 @@ sudo apt-get install -y python3 python3-pip postgresql-client libpq-dev
 
 # Installer les modules Python nécessaires
 echo "🐍 Installation des modules Python..."
-sudo -H pip3 install psycopg2-binary flask azure-storage-blob
+sudo -H pip3 install psycopg2-binary flask azure-storage-blob azure.identity azure.keyvault.secrets
 
 # Créer le répertoire de l'application Flask dans /opt/
 echo "🗂 Création du répertoire /opt/flaskapp..."

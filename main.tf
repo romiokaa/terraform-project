@@ -119,6 +119,11 @@ resource "azurerm_linux_virtual_machine" "vm" {
     version   = "latest"
   }
 
+  # Activation de l'identité gérée
+  identity {
+    type = "SystemAssigned"  # Cela activera une identité gérée automatiquement pour cette VM
+  }
+
   depends_on = [azurerm_public_ip.vm_ip]
 
    # Transférer le fichier app.py depuis le répertoire local vers la VM
@@ -153,6 +158,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
       "sudo dos2unix /tmp/setup_flask.sh",
       "sudo chmod +x /tmp/setup_flask.sh",
       "sudo /tmp/setup_flask.sh"
+
     ]
     connection {
       type     = "ssh"
@@ -215,4 +221,29 @@ resource "azurerm_postgresql_database" "romy_database" {
   server_name         = azurerm_postgresql_server.romy_postgres.name  
   collation           = "en_US.utf8"
   charset             = "UTF8"
+}
+
+# Déclaration du data source azurerm_client_config
+data "azurerm_client_config" "current" {}
+
+resource "azurerm_key_vault" "kv" {
+  name                = "romykeyvault"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+  sku_name            = "standard"
+}
+
+resource "azurerm_key_vault_secret" "storage_key" {
+  name         = "storage-account-key"
+  value        = azurerm_storage_account.storage.primary_access_key
+  key_vault_id = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_role_assignment" "key_vault_access" {
+  principal_id   = azurerm_linux_virtual_machine.vm.identity[0].principal_id  # ID de l'identité gérée
+  role_definition_name = "Owner"
+  scope           = azurerm_key_vault.kv.id
+
+  depends_on = [azurerm_linux_virtual_machine.vm]
 }
